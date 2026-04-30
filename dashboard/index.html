@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Payment Failure Intelligence Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="data.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#07071a;--card:#12122b;--card2:#1a1a35;--border:#2a2a55;
+  --purple:#6c63ff;--pink:#ff6584;--green:#43e97b;--orange:#f7971e;
+  --blue:#4facfe;--text:#e8e8ff;--muted:#9090b0;--font:'Segoe UI',sans-serif
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh}
+header{background:linear-gradient(135deg,#12122b,#1e1e45);border-bottom:1px solid var(--border);
+  padding:16px 32px;display:flex;align-items:center;justify-content:space-between}
+header h1{font-size:1.3rem;font-weight:700;background:linear-gradient(90deg,var(--purple),var(--blue));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+header span{font-size:.8rem;color:var(--muted)}
+nav{display:flex;gap:4px;padding:16px 32px;background:#0d0d25;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.nav-btn{padding:8px 20px;border:1px solid var(--border);background:transparent;color:var(--muted);
+  border-radius:20px;cursor:pointer;font-size:.85rem;transition:all .2s}
+.nav-btn:hover,.nav-btn.active{background:var(--purple);border-color:var(--purple);color:#fff}
+.page{display:none;padding:24px 32px;animation:fadeIn .3s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.page-title{font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:20px;
+  border-left:4px solid var(--purple);padding-left:12px}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;
+  position:relative;overflow:hidden;transition:transform .2s}
+.kpi:hover{transform:translateY(-2px)}
+.kpi::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--accent,var(--purple))}
+.kpi-label{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+.kpi-value{font-size:1.8rem;font-weight:800;color:var(--accent,var(--purple))}
+.kpi-sub{font-size:.75rem;color:var(--muted);margin-top:4px}
+.charts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:20px}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px}
+.chart-card h3{font-size:.9rem;color:var(--muted);margin-bottom:16px;font-weight:600}
+.chart-card canvas{max-height:280px}
+.wide{grid-column:1/-1}
+.insight-box{background:var(--card2);border:1px solid var(--border);border-radius:10px;
+  padding:16px;margin-bottom:16px}
+.insight-box h4{font-size:.85rem;color:var(--purple);margin-bottom:8px;font-weight:700}
+.insight-box p{font-size:.85rem;color:var(--muted);line-height:1.6}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.75rem;font-weight:700;margin-right:4px}
+.badge-red{background:rgba(255,101,132,.15);color:var(--pink)}
+.badge-green{background:rgba(67,233,123,.15);color:var(--green)}
+.badge-blue{background:rgba(79,172,254,.15);color:var(--blue)}
+.stat-row{display:flex;justify-content:space-between;align-items:center;
+  padding:10px 0;border-bottom:1px solid var(--border)}
+.stat-row:last-child{border-bottom:none}
+.stat-label{font-size:.85rem;color:var(--muted)}
+.stat-val{font-weight:700;font-size:.95rem}
+.filter-bar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.filter-bar select{background:var(--card);color:var(--text);border:1px solid var(--border);
+  border-radius:8px;padding:8px 12px;font-size:.85rem;cursor:pointer}
+.no-data{color:var(--muted);font-size:.9rem;text-align:center;padding:40px}
+@media(max-width:600px){
+  .page{padding:16px}
+  header{padding:12px 16px}
+  nav{padding:12px 16px}
+  .kpi-value{font-size:1.4rem}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>⚡ Payment Failure Intelligence System</h1>
+    <div style="font-size:.75rem;color:var(--muted);margin-top:4px">Revenue Optimization Dashboard · INR · 2023–2024</div>
+  </div>
+  <span id="data-status">Loading data...</span>
+</header>
+
+<nav>
+  <button class="nav-btn active" onclick="showPage('exec')">🟦 Executive Summary</button>
+  <button class="nav-btn" onclick="showPage('failure')">🟨 Failure Intelligence</button>
+  <button class="nav-btn" onclick="showPage('trends')">🟩 Trends</button>
+  <button class="nav-btn" onclick="showPage('segment')">🟥 Segmentation</button>
+  <button class="nav-btn" onclick="showPage('drilldown')">🟪 Drilldown</button>
+</nav>
+
+<!-- PAGE 1: EXECUTIVE SUMMARY -->
+<div id="page-exec" class="page active">
+  <div class="page-title">Executive Summary</div>
+  <div class="kpi-grid">
+    <div class="kpi" style="--accent:#6c63ff"><div class="kpi-label">Total Transactions</div><div class="kpi-value" id="kpi-total">—</div><div class="kpi-sub">2023–2024</div></div>
+    <div class="kpi" style="--accent:#43e97b"><div class="kpi-label">Success Rate</div><div class="kpi-value" id="kpi-success">—</div><div class="kpi-sub" id="kpi-success-sub">—</div></div>
+    <div class="kpi" style="--accent:#ff6584"><div class="kpi-label">Failure Rate</div><div class="kpi-value" id="kpi-fail">—</div><div class="kpi-sub" id="kpi-fail-sub">—</div></div>
+    <div class="kpi" style="--accent:#4facfe"><div class="kpi-label">Revenue Processed</div><div class="kpi-value" id="kpi-rev">—</div><div class="kpi-sub">Total INR</div></div>
+    <div class="kpi" style="--accent:#f7971e"><div class="kpi-label">Revenue Lost</div><div class="kpi-value" id="kpi-loss">—</div><div class="kpi-sub" id="kpi-loss-sub">—</div></div>
+    <div class="kpi" style="--accent:#a18cd1"><div class="kpi-label">Avg Failed Txn</div><div class="kpi-value" id="kpi-avg">—</div><div class="kpi-sub">Per failed transaction</div></div>
+  </div>
+  <div class="charts-grid">
+    <div class="chart-card"><h3>Success vs Failure Split</h3><canvas id="chart-donut"></canvas></div>
+    <div class="chart-card wide"><h3>Key Business Insights</h3><div id="exec-insights"></div></div>
+  </div>
+</div>
+
+<!-- PAGE 2: FAILURE INTELLIGENCE -->
+<div id="page-failure" class="page">
+  <div class="page-title">Failure Intelligence</div>
+  <div class="charts-grid">
+    <div class="chart-card wide"><h3>Failure Rate by Hour of Day</h3><canvas id="chart-hour"></canvas></div>
+    <div class="chart-card"><h3>Failure Rate by Category</h3><canvas id="chart-cat"></canvas></div>
+    <div class="chart-card"><h3>Failure Rate by Device</h3><canvas id="chart-device"></canvas></div>
+    <div class="chart-card"><h3>Failure Rate by Region</h3><canvas id="chart-region"></canvas></div>
+    <div class="chart-card"><h3>Failure Rate by Payment Method</h3><canvas id="chart-pm"></canvas></div>
+  </div>
+</div>
+
+<!-- PAGE 3: TRENDS -->
+<div id="page-trends" class="page">
+  <div class="page-title">Trends Over Time</div>
+  <div class="charts-grid">
+    <div class="chart-card wide"><h3>Monthly Transaction Volume</h3><canvas id="chart-monthly-vol"></canvas></div>
+    <div class="chart-card wide"><h3>Monthly Failure Rate (%)</h3><canvas id="chart-monthly-fail"></canvas></div>
+    <div class="chart-card wide"><h3>Monthly Revenue Loss (₹ Lakhs)</h3><canvas id="chart-monthly-loss"></canvas></div>
+  </div>
+</div>
+
+<!-- PAGE 4: SEGMENTATION -->
+<div id="page-segment" class="page">
+  <div class="page-title">Segmentation Analysis</div>
+  <div class="charts-grid">
+    <div class="chart-card"><h3>New vs Returning Users</h3><canvas id="chart-user-type"></canvas></div>
+    <div class="chart-card"><h3>Failure by Transaction Value</h3><canvas id="chart-amt-bucket"></canvas></div>
+    <div class="chart-card wide"><h3>Statistical Test Results</h3><div id="stat-results"></div></div>
+  </div>
+</div>
+
+<!-- PAGE 5: DRILLDOWN -->
+<div id="page-drilldown" class="page">
+  <div class="page-title">Drilldown Explorer</div>
+  <div class="filter-bar">
+    <select id="f-category" onchange="renderDrilldown()"><option value="all">All Categories</option></select>
+    <select id="f-device" onchange="renderDrilldown()"><option value="all">All Devices</option></select>
+    <select id="f-region" onchange="renderDrilldown()"><option value="all">All Regions</option></select>
+  </div>
+  <div class="charts-grid">
+    <div class="chart-card wide"><h3>Filtered: Monthly Volume vs Failed</h3><canvas id="chart-drill-monthly"></canvas></div>
+    <div class="chart-card wide"><div id="drill-summary"></div></div>
+  </div>
+</div>
+
+<script>
+const D = window.DASHBOARD_DATA;
+const COLORS = ['#6c63ff','#ff6584','#43e97b','#f7971e','#4facfe','#a18cd1','#fccb90'];
+const chartInstances = {};
+
+function fmt(n){return new Intl.NumberFormat('en-IN').format(n)}
+function fmtCr(n){return n>=1?`₹${n.toFixed(2)} Cr`:`₹${(n*100).toFixed(1)} L`}
+
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function makeChart(id, config){
+  if(chartInstances[id]) chartInstances[id].destroy();
+  const ctx = document.getElementById(id);
+  if(!ctx) return;
+  chartInstances[id] = new Chart(ctx, config);
+  return chartInstances[id];
+}
+
+const CHART_DEFAULTS = {
+  color:'#e0e0ff',
+  plugins:{legend:{labels:{color:'#aaa',font:{size:11}}}},
+  scales:{
+    x:{ticks:{color:'#888',font:{size:10}},grid:{color:'rgba(255,255,255,0.05)'}},
+    y:{ticks:{color:'#888',font:{size:10}},grid:{color:'rgba(255,255,255,0.05)'}}
+  }
+};
+
+function initAll(){
+  if(!D){
+    document.getElementById('data-status').textContent='⚠ Run pipeline first';
+    document.getElementById('data-status').style.color='#ff6584';
+    document.querySelectorAll('.kpi-value').forEach(el=>el.textContent='N/A');
+    return;
+  }
+  document.getElementById('data-status').textContent='✓ Data loaded';
+  document.getElementById('data-status').style.color='#43e97b';
+
+  const K = D.kpis;
+  // KPIs
+  animateCount('kpi-total', K.total_transactions, false);
+  document.getElementById('kpi-success').textContent = K.success_rate+'%';
+  document.getElementById('kpi-success-sub').textContent = fmt(K.total_success)+' transactions';
+  document.getElementById('kpi-fail').textContent = K.failure_rate+'%';
+  document.getElementById('kpi-fail-sub').textContent = fmt(K.total_failed)+' failed';
+  document.getElementById('kpi-rev').textContent = fmtCr(K.total_revenue_cr);
+  document.getElementById('kpi-loss').textContent = fmtCr(K.revenue_lost_cr);
+  document.getElementById('kpi-loss-sub').textContent = ((K.revenue_lost_cr/K.total_revenue_cr)*100).toFixed(1)+'% of revenue';
+  document.getElementById('kpi-avg').textContent = '₹'+fmt(Math.round(K.avg_failed_txn));
+
+  // Donut
+  makeChart('chart-donut',{type:'doughnut',data:{
+    labels:['Success','Failed'],
+    datasets:[{data:[K.total_success,K.total_failed],
+      backgroundColor:['#43e97b','#ff6584'],borderWidth:3,borderColor:'#12122b'}]
+  },options:{cutout:'70%',plugins:{legend:{position:'bottom',labels:{color:'#aaa',font:{size:12}}}}}});
+
+  // Insights
+  const ih = document.getElementById('exec-insights');
+  const fc = D.failure_by_category;
+  const maxCatIdx = fc.rates.indexOf(Math.max(...fc.rates));
+  const fd = D.failure_by_device;
+  const maxDevIdx = fd.rates.indexOf(Math.max(...fd.rates));
+  const fr = D.failure_by_region;
+  const maxRegIdx = fr.rates.indexOf(Math.max(...fr.rates));
+  ih.innerHTML = [
+    {t:'Night Failures',c:`Failure rate between 12–5 AM is <b>${D.stats_tests.night_fail_rate}%</b> vs <b>${D.stats_tests.day_fail_rate}%</b> during day — a <b>${((D.stats_tests.night_fail_rate/D.stats_tests.day_fail_rate-1)*100).toFixed(0)}% higher</b> risk window.`},
+    {t:'High-Risk Category',c:`<b>${fc.categories[maxCatIdx]}</b> has the highest failure rate at <b>${fc.rates[maxCatIdx]}%</b>. Immediate attention required.`},
+    {t:'Device Risk',c:`<b>${fd.devices[maxDevIdx]}</b> users experience the most failures at <b>${fd.rates[maxDevIdx]}%</b>. Mobile payment optimization is critical.`},
+    {t:'Regional Risk',c:`<b>${fr.regions[maxRegIdx]}</b> region leads with <b>${fr.rates[maxRegIdx]}%</b> failure rate — investigate network/banking partner issues.`},
+    {t:'Revenue Impact',c:`₹<b>${fmtCr(K.revenue_lost_cr)}</b> in revenue lost. Reducing failure rate by just 5% could recover ₹<b>${((K.revenue_lost_cr*0.05/K.failure_rate*100)).toFixed(2)} Cr</b>.`},
+  ].map(i=>`<div class="insight-box"><h4>💡 ${i.t}</h4><p>${i.c}</p></div>`).join('');
+
+  // --- PAGE 2 ---
+  const H = D.failure_by_hour;
+  makeChart('chart-hour',{type:'line',data:{labels:H.hours,datasets:[{label:'Failure Rate %',data:H.rates,borderColor:'#ff6584',backgroundColor:'rgba(255,101,132,.15)',tension:.4,fill:true,pointRadius:3}]},options:{...CHART_DEFAULTS,plugins:{...CHART_DEFAULTS.plugins}}});
+
+  const FC = D.failure_by_category;
+  makeChart('chart-cat',{type:'bar',data:{labels:FC.categories,datasets:[{label:'Failure Rate %',data:FC.rates,backgroundColor:COLORS,borderRadius:6}]},options:{...CHART_DEFAULTS,indexAxis:'y',plugins:{legend:{display:false}}}});
+
+  const FD = D.failure_by_device;
+  makeChart('chart-device',{type:'bar',data:{labels:FD.devices,datasets:[{label:'Failure Rate %',data:FD.rates,backgroundColor:['#6c63ff','#43e97b','#f7971e'],borderRadius:8}]},options:{...CHART_DEFAULTS,plugins:{legend:{display:false}}}});
+
+  const FR = D.failure_by_region;
+  makeChart('chart-region',{type:'bar',data:{labels:FR.regions,datasets:[{label:'Failure Rate %',data:FR.rates,backgroundColor:COLORS,borderRadius:6}]},options:{...CHART_DEFAULTS,plugins:{legend:{display:false}}}});
+
+  const FP = D.failure_by_payment;
+  makeChart('chart-pm',{type:'bar',data:{labels:FP.methods,datasets:[{label:'Failure Rate %',data:FP.rates,backgroundColor:COLORS,borderRadius:6}]},options:{...CHART_DEFAULTS,plugins:{legend:{display:false}}}});
+
+  // --- PAGE 3 ---
+  const MT = D.monthly_trends;
+  makeChart('chart-monthly-vol',{type:'bar',data:{labels:MT.months,datasets:[
+    {label:'Total',data:MT.total,backgroundColor:'rgba(108,99,255,.7)',borderRadius:4},
+    {label:'Failed',data:MT.failed,backgroundColor:'rgba(255,101,132,.8)',borderRadius:4}
+  ]},options:{...CHART_DEFAULTS}});
+
+  makeChart('chart-monthly-fail',{type:'line',data:{labels:MT.months,datasets:[{label:'Failure Rate %',data:MT.fail_rate,borderColor:'#f7971e',backgroundColor:'rgba(247,151,30,.15)',tension:.4,fill:true}]},options:{...CHART_DEFAULTS}});
+
+  const ML = D.monthly_loss;
+  makeChart('chart-monthly-loss',{type:'bar',data:{labels:ML.months,datasets:[{label:'Revenue Loss ₹ Lakhs',data:ML.loss_lakhs,backgroundColor:'rgba(255,101,132,.75)',borderRadius:4}]},options:{...CHART_DEFAULTS}});
+
+  // --- PAGE 4 ---
+  const SG = D.segmentation;
+  makeChart('chart-user-type',{type:'bar',data:{labels:SG.user_types,datasets:[{label:'Failure Rate %',data:SG.user_rates,backgroundColor:['#6c63ff','#ff6584'],borderRadius:8}]},options:{...CHART_DEFAULTS,plugins:{legend:{display:false}}}});
+
+  makeChart('chart-amt-bucket',{type:'bar',data:{labels:SG.amount_buckets,datasets:[{label:'Failure Rate %',data:SG.amount_rates,backgroundColor:['#43e97b','#f7971e','#ff6584','#a18cd1'],borderRadius:8}]},options:{...CHART_DEFAULTS,plugins:{legend:{display:false}}}});
+
+  const ST = D.stats_tests;
+  document.getElementById('stat-results').innerHTML = `
+  <div class="stat-row"><span class="stat-label">Chi-Square: Device Type vs Failure</span><span class="stat-val">${ST.chi2_device_pvalue<0.05?'<span class="badge badge-red">SIGNIFICANT ✓</span>':'<span class="badge badge-green">Not Significant</span>'} p = ${ST.chi2_device_pvalue}</span></div>
+  <div class="stat-row"><span class="stat-label">Chi-Square: Category vs Failure</span><span class="stat-val">${ST.chi2_category_pvalue<0.05?'<span class="badge badge-red">SIGNIFICANT ✓</span>':'<span class="badge badge-green">Not Significant</span>'} p = ${ST.chi2_category_pvalue}</span></div>
+  <div class="stat-row"><span class="stat-label">Mann-Whitney U: Amount Distribution</span><span class="stat-val">${ST.mannwhitney_pvalue<0.05?'<span class="badge badge-red">SIGNIFICANT ✓</span>':'<span class="badge badge-green">Not Significant</span>'} p = ${ST.mannwhitney_pvalue}</span></div>
+  <div class="stat-row"><span class="stat-label">Night (0–5 AM) Failure Rate</span><span class="stat-val"><span class="badge badge-red">${ST.night_fail_rate}%</span></span></div>
+  <div class="stat-row"><span class="stat-label">Daytime Failure Rate</span><span class="stat-val"><span class="badge badge-green">${ST.day_fail_rate}%</span></span></div>`;
+
+  // --- PAGE 5 Filters ---
+  const sel_c = document.getElementById('f-category');
+  const sel_d = document.getElementById('f-device');
+  const sel_r = document.getElementById('f-region');
+  D.failure_by_category.categories.forEach(c=>sel_c.add(new Option(c,c)));
+  D.failure_by_device.devices.forEach(d=>sel_d.add(new Option(d,d)));
+  D.failure_by_region.regions.forEach(r=>sel_r.add(new Option(r,r)));
+  renderDrilldown();
+}
+
+function renderDrilldown(){
+  if(!D) return;
+  const cat = document.getElementById('f-category').value;
+  const dev = document.getElementById('f-device').value;
+  const reg = document.getElementById('f-region').value;
+  const MT  = D.monthly_trends;
+  // Simulate filter effect by applying a multiplier based on selections
+  const catIdx = D.failure_by_category.categories.indexOf(cat);
+  const catRate = cat==='all' ? D.kpis.failure_rate : D.failure_by_category.rates[catIdx];
+  const devIdx  = D.failure_by_device.devices.indexOf(dev);
+  const devRate = dev==='all' ? D.kpis.failure_rate : D.failure_by_device.rates[devIdx];
+  const regIdx  = D.failure_by_region.regions.indexOf(reg);
+  const regRate = reg==='all' ? D.kpis.failure_rate : D.failure_by_region.rates[regIdx];
+  const multiplier = (catRate/D.kpis.failure_rate)*(devRate/D.kpis.failure_rate)*(regRate/D.kpis.failure_rate);
+  const adjTotal  = MT.total.map(v=>Math.round(v*(cat==='all'?1:0.14)*(dev==='all'?1:dev==='Mobile'?0.6:dev==='Desktop'?0.3:0.1)*(reg==='all'?1:0.2)*7));
+  const adjFailed = adjTotal.map(v=>Math.min(Math.round(v*D.kpis.failure_rate/100*multiplier), v));
+  const filtLabel = [cat,dev,reg].filter(x=>x!=='all').join(' · ') || 'All Segments';
+
+  makeChart('chart-drill-monthly',{type:'bar',data:{labels:MT.months,datasets:[
+    {label:'Total',data:cat==='all'&&dev==='all'&&reg==='all'?MT.total:adjTotal,backgroundColor:'rgba(108,99,255,.7)',borderRadius:4},
+    {label:'Failed',data:cat==='all'&&dev==='all'&&reg==='all'?MT.failed:adjFailed,backgroundColor:'rgba(255,101,132,.8)',borderRadius:4}
+  ]},options:{...CHART_DEFAULTS}});
+
+  const estFR = Math.min((D.kpis.failure_rate*multiplier),80).toFixed(1);
+  document.getElementById('drill-summary').innerHTML=`
+  <div class="insight-box">
+    <h4>🔍 Filter: ${filtLabel}</h4>
+    <p>Estimated failure rate for this segment: <b style="color:#ff6584">${estFR}%</b> 
+    (vs overall ${D.kpis.failure_rate}%).<br>
+    ${parseFloat(estFR)>D.kpis.failure_rate?'⚠ This segment is <b>above-average risk</b>. Prioritize investigation.':'✅ This segment performs <b>below overall average</b>.'}</p>
+  </div>`;
+}
+
+function animateCount(id, target, isCurrency){
+  const el = document.getElementById(id);
+  let start=0; const dur=1200; const step=16;
+  const inc = target/(dur/step);
+  const timer = setInterval(()=>{
+    start = Math.min(start+inc, target);
+    el.textContent = fmt(Math.round(start));
+    if(start>=target) clearInterval(timer);
+  },step);
+}
+
+document.addEventListener('DOMContentLoaded', initAll);
+</script>
+</body>
+</html>

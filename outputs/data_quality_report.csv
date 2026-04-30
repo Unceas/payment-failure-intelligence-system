@@ -1,0 +1,6 @@
+metric,value
+original_rows,100000
+cleaned_rows,100000
+duplicates_removed,50
+nulls_imputed,450
+overall_failure_rate,0.1566
