@@ -167,13 +167,15 @@ python run_pipeline.py
 
 ## 💰 Business Impact
 
-- Estimated monthly revenue loss: **₹5.90CR**
+- Estimated monthly revenue loss: **₹5.90CR**  
+(calculated as failed_transactions × average transaction value)
 - Highest loss segment:
   - Category: Electronics
   - Time Window: 12–5 AM
   - Device: Mobile
 
 - Top 20% of failure scenarios contribute to **~70% of total loss**, indicating strong prioritization opportunities.
+- Addressing the top failure segments alone can potentially recover a significant portion of lost revenue with minimal operational changes.
 
 ---
 
@@ -221,4 +223,8 @@ By identifying high-risk scenarios and quantifying their impact, this project en
 
 ## 👤 Summary
 
-This project demonstrates how raw transaction data can be transformed into **decision-grade insights**, combining data engineering, statistical validation, and business reasoning to solve a real operational problem.
+This project demonstrates the ability to translate raw transaction data into actionable business insights.
+
+The analysis identifies high-impact failure scenarios, validates them statistically, and prioritizes solutions based on measurable revenue impact—mirroring real-world decision-making workflows in data-driven organizations.
+
+Designed to enable stakeholders to quickly identify high-risk segments, monitor failure trends, and prioritize corrective actions.
