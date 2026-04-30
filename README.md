@@ -221,7 +221,7 @@ The interactive dashboard has 5 pages:
 | 🟪 Drilldown | Interactive filters: Category, Device, Region |
 
 ### Privew:
-[Dashboard](Screenshot 2026-04-30 222459.png)
+![Dashboard](Images/Dashboard.png)
 
 
 Use Case:
