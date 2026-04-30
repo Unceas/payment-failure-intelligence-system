@@ -1,6 +1,10 @@
 # 💳 Payment Failure Intelligence & Revenue Optimization System
 
-> **End-to-end Data Analytics portfolio project** demonstrating data cleaning, feature engineering, statistical analysis, visualization, and business intelligence.
+> Diagnosing transaction failures, quantifying revenue loss, and enabling data-driven optimization decisions.
+
+This project analyzes payment transaction data to uncover **when, where, and why failures occur**, and translates those findings into **measurable business impact and actionable strategies**.
+
+It simulates a real-world analytics workflow used by product, risk, and payments teams to reduce failure rates and recover lost revenue.
 
 ![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=flat&logo=python&logoColor=white)
 ![Pandas](https://img.shields.io/badge/Pandas-2.0+-150458?style=flat&logo=pandas)
@@ -36,7 +40,14 @@ This project builds a complete analytics system that:
 
 ## 📦 Dataset
 
-**Synthetic dataset** — 100,000 transactions generated to mirror the [Kaggle Online Payments Fraud Detection Dataset](https://www.kaggle.com/datasets/jainilcoder/online-payment-fraud-detection).
+A **synthetic dataset (100,000 transactions)** was generated to simulate real-world payment system behavior, including:
+
+- Time-based failure spikes
+- Device-specific failure patterns
+- Category-level variability
+- Regional inconsistencies
+
+This approach allows controlled experimentation and reproducible analysis while preserving realistic transaction dynamics.
 
 | Field | Description |
 |-------|-------------|
@@ -142,15 +153,27 @@ python run_pipeline.py
 
 ## 💡 Key Insights
 
-> **"Failure rate increases by ~60% between 12–5 AM compared to business hours"**
+- Failure rate increases from **~3% to ~11% between 12–5 AM**, indicating potential system downtime or processing bottlenecks during low-traffic hours.
 
-> **"Electronics category has the highest failure rate — ~30% above platform average"**
+- Electronics category exhibits **~30% higher failure rate than platform average**, suggesting gateway or integration instability.
 
-> **"Mobile users experience statistically significantly higher failure rates (p < 0.05)"**
+- Mobile transactions show **statistically significant higher failure rates (p < 0.05)**, pointing to SDK/API inefficiencies.
 
-> **"East region shows the highest regional failure rate, indicating infrastructure issues"**
+- East region consistently underperforms, indicating possible **banking or infrastructure limitations**.
 
-> **"High-value transactions (>₹50K) fail at a disproportionately higher rate"**
+- High-value transactions (>₹50K) fail disproportionately, suggesting **overly aggressive fraud detection or timeout issues**.
+
+---
+
+## 💰 Business Impact
+
+- Estimated monthly revenue loss: **₹5.90CR**
+- Highest loss segment:
+  - Category: Electronics
+  - Time Window: 12–5 AM
+  - Device: Mobile
+
+- Top 20% of failure scenarios contribute to **~70% of total loss**, indicating strong prioritization opportunities.
 
 ---
 
@@ -181,6 +204,21 @@ The interactive dashboard has 5 pages:
 
 ---
 
-## 👤 Author
+## 🎯 Why This Matters
 
-Built as a **Data Analyst portfolio project** demonstrating end-to-end analytical thinking, Python data engineering, statistical validation, and business insight communication.
+Transaction failures directly impact:
+
+- Revenue realization
+- Customer trust and retention
+- Operational efficiency
+
+By identifying high-risk scenarios and quantifying their impact, this project enables:
+
+- Prioritized engineering fixes
+- Smarter retry mechanisms
+- Data-driven product decisions
+
+
+## 👤 Summary
+
+This project demonstrates how raw transaction data can be transformed into **decision-grade insights**, combining data engineering, statistical validation, and business reasoning to solve a real operational problem.
