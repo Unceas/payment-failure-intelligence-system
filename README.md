@@ -192,6 +192,22 @@ python run_pipeline.py
 
 ---
 
+## 📊 Expected Impact of Recommendations
+
+- Reducing night-time failures could recover ~₹X CR/month
+- Fixing mobile SDK issues may improve success rate by ~Y%
+- Addressing top 3 segments can reduce ~Z% of total failures
+
+---
+
+## ⚖️ Trade-offs & Considerations
+
+- Reducing fraud checks may increase fraud risk
+- Retry mechanisms may increase system load
+- Fixing regional issues requires external banking partnerships
+
+---
+
 ## 📈 Dashboard
 
 The interactive dashboard has 5 pages:
@@ -203,6 +219,15 @@ The interactive dashboard has 5 pages:
 | 🟩 Trends | Monthly volume, failure rate trend, revenue loss timeline |
 | 🟥 Segmentation | New vs Returning users, High vs Low value analysis |
 | 🟪 Drilldown | Interactive filters: Category, Device, Region |
+
+### Privew:
+
+
+Use Case:
+A product manager can:
+- identify high-risk segments
+- monitor failure spikes
+- prioritize fixes in real time
 
 ---
 
@@ -228,3 +253,5 @@ This project demonstrates the ability to translate raw transaction data into act
 The analysis identifies high-impact failure scenarios, validates them statistically, and prioritizes solutions based on measurable revenue impact—mirroring real-world decision-making workflows in data-driven organizations.
 
 Designed to enable stakeholders to quickly identify high-risk segments, monitor failure trends, and prioritize corrective actions.
+
+Future work includes applying this framework to real-world datasets with noisy and incomplete data.
